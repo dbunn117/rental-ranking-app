@@ -51,16 +51,23 @@ export default function Home() {
 
   // Fetch rentals
   useEffect(() => {
-    supabase
-      .from('rentals')
-      .select('*')
-      .order('id')
-      .then(({ data, error: e }) => {
+    let cancelled = false
+    async function fetchRentals() {
+      try {
+        const { data, error: e } = await supabase
+          .from('rentals')
+          .select('*')
+          .order('id')
         if (e) throw e
-        setRentals((Array.isArray(data) ? data : []) as Rental[])
-      })
-      .catch((err) => setError(err?.message ?? 'Failed to load rentals'))
-      .finally(() => setLoading(false))
+        if (!cancelled) setRentals((Array.isArray(data) ? data : []) as Rental[])
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load rentals')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    fetchRentals()
+    return () => { cancelled = true }
   }, [supabase])
 
   // Auth state
