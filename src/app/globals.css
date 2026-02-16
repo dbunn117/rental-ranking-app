@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-geist-sans: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Fraunces', 'DM Sans', system-ui, sans-serif;
+}
+
+body {
+  @apply bg-sand-50 text-sea-900 antialiased;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
