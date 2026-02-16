@@ -4,7 +4,9 @@ import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import type { Rental, RentalWithStats, Review, SortOption } from '@/types/rental'
 import { createClient } from '@/lib/supabase/client'
 import { RentalCard } from '@/components/RentalCard'
+import { RentalListItem } from '@/components/RentalListItem'
 import { SortControls } from '@/components/SortControls'
+import { FilterControls, type ViewMode } from '@/components/FilterControls'
 import { AuthUI } from '@/components/AuthUI'
 
 function getPrice(rental: Rental): number {
@@ -42,6 +44,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [sort, setSort] = useState<SortOption>('default')
+  const [bedroomFilter, setBedroomFilter] = useState<string>('')
+  const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [savingId, setSavingId] = useState<number | null>(null)
   const commentDebounceRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
   const userReviewsRef = useRef<Map<number, { rating: number; comment: string }>>(new Map())
@@ -195,6 +199,19 @@ export default function Home() {
     return list
   }, [rentalsWithStats, sort, userReviews])
 
+  const bedroomOptions = useMemo(() => {
+    const set = new Set<string>()
+    rentalsWithStats.forEach((r) => {
+      if (r.bedrooms != null && r.bedrooms.trim() !== '') set.add(String(r.bedrooms).trim())
+    })
+    return Array.from(set).sort((a, b) => Number(a) - Number(b))
+  }, [rentalsWithStats])
+
+  const filteredRentals = useMemo(() => {
+    if (!bedroomFilter) return sortedRentals
+    return sortedRentals.filter((r) => String(r.bedrooms ?? '').trim() === bedroomFilter)
+  }, [sortedRentals, bedroomFilter])
+
   return (
     <div className="min-h-screen">
       <header className="border-b border-sand-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
@@ -208,8 +225,15 @@ export default function Home() {
                 Compare and rank properties. Sign in to save your ratings and comments.
               </p>
               {!loading && rentals.length > 0 && (
-                <div className="mt-4">
+                <div className="mt-4 flex flex-wrap items-center gap-4">
                   <SortControls value={sort} onChange={setSort} />
+                  <FilterControls
+                    bedroomOptions={bedroomOptions}
+                    bedroomFilter={bedroomFilter}
+                    onBedroomFilterChange={setBedroomFilter}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                  />
                 </div>
               )}
             </div>
@@ -237,9 +261,9 @@ export default function Home() {
           <p className="text-sea-600 text-center py-12">No rental data found.</p>
         )}
 
-        {!loading && !error && sortedRentals.length > 0 && (
+        {!loading && !error && filteredRentals.length > 0 && viewMode === 'card' && (
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
-            {sortedRentals.map((rental) => (
+            {filteredRentals.map((rental) => (
               <li key={rental.id}>
                 <RentalCard
                   rental={rental}
@@ -253,6 +277,30 @@ export default function Home() {
               </li>
             ))}
           </ul>
+        )}
+
+        {!loading && !error && filteredRentals.length > 0 && viewMode === 'list' && (
+          <ul className="space-y-3">
+            {filteredRentals.map((rental: RentalWithStats) => (
+              <li key={rental.id}>
+                <RentalListItem
+                  rental={rental}
+                  userRating={userReviews.get(rental.id)?.rating ?? 0}
+                  userComment={userReviews.get(rental.id)?.comment ?? ''}
+                  canReview={!!user}
+                  onRatingChange={handleRatingChange}
+                  onCommentChange={handleCommentChange}
+                  isSaving={savingId === rental.id}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!loading && !error && sortedRentals.length > 0 && filteredRentals.length === 0 && (
+          <p className="text-sea-600 text-center py-12">
+            No properties match the current bedroom filter. Try a different option.
+          </p>
         )}
       </main>
     </div>
