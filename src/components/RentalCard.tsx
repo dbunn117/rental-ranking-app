@@ -1,10 +1,11 @@
 'use client'
 
-import type { RentalWithStats } from '@/types/rental'
+import type { RentalWithStats, Review } from '@/types/rental'
 import { StarRating } from './StarRating'
 
 interface RentalCardProps {
   rental: RentalWithStats
+  reviews: Review[]
   userRating: number
   userComment: string
   canReview: boolean
@@ -33,8 +34,18 @@ function Amenity({ label, value }: { label: string; value: boolean }) {
   )
 }
 
+function formatReviewDate(created_at: string): string {
+  try {
+    const d = new Date(created_at)
+    return d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+  } catch {
+    return ''
+  }
+}
+
 export function RentalCard({
   rental,
+  reviews,
   userRating,
   userComment,
   canReview,
@@ -86,6 +97,31 @@ export function RentalCard({
           <p className="text-sm text-sea-600 mb-3">
             ★ {avg.toFixed(1)} ({count} review{count !== 1 ? 's' : ''})
           </p>
+        )}
+
+        {reviews.length > 0 && (
+          <div className="mb-4 rounded-lg bg-sand-50 border border-sand-100 p-3">
+            <p className="text-xs font-medium text-sea-600 mb-2">Reviews</p>
+            <ul className="space-y-2 max-h-40 overflow-y-auto">
+              {reviews.map((review) => (
+                <li key={review.id} className="text-sm">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {review.rating != null && (
+                      <span className="text-amber-500" aria-label={`${review.rating} stars`}>
+                        {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                      </span>
+                    )}
+                    {review.created_at && (
+                      <span className="text-sand-500 text-xs">{formatReviewDate(review.created_at)}</span>
+                    )}
+                  </div>
+                  {review.comment && (
+                    <p className="text-sea-800 mt-0.5">{review.comment}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-sand-100">

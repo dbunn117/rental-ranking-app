@@ -1,10 +1,11 @@
 'use client'
 
-import type { RentalWithStats } from '@/types/rental'
+import type { RentalWithStats, Review } from '@/types/rental'
 import { StarRating } from './StarRating'
 
 interface RentalListItemProps {
   rental: RentalWithStats
+  reviews: Review[]
   userRating: number
   userComment: string
   canReview: boolean
@@ -24,8 +25,18 @@ function boolLabel(value: string | null): boolean {
   return String(value ?? '').toLowerCase() === 'true'
 }
 
+function formatReviewDate(created_at: string): string {
+  try {
+    const d = new Date(created_at)
+    return d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+  } catch {
+    return ''
+  }
+}
+
 export function RentalListItem({
   rental,
+  reviews,
   userRating,
   userComment,
   canReview,
@@ -68,6 +79,24 @@ export function RentalListItem({
           <p className="text-sm text-sea-600 mt-1">
             ★ {avg.toFixed(1)} ({count} review{count !== 1 ? 's' : ''})
           </p>
+        )}
+        {reviews.length > 0 && (
+          <ul className="mt-2 space-y-1 text-sm text-sea-700">
+            {reviews.slice(0, 3).map((review) => (
+              <li key={review.id}>
+                {review.rating != null && (
+                  <span className="text-amber-500">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                )}
+                {review.comment && <span className="ml-1">{review.comment}</span>}
+                {review.created_at && (
+                  <span className="text-sand-500 text-xs ml-1">({formatReviewDate(review.created_at)})</span>
+                )}
+              </li>
+            ))}
+            {reviews.length > 3 && (
+              <li className="text-sand-500 text-xs">+{reviews.length - 3} more</li>
+            )}
+          </ul>
         )}
       </div>
       <div className="flex flex-wrap items-center gap-3 shrink-0 border-t border-sand-100 pt-3 sm:border-t-0 sm:pt-0 sm:border-l sm:border-sand-200 sm:pl-4">

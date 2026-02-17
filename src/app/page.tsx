@@ -213,6 +213,16 @@ export default function Home() {
     return sortedRentals.filter((r) => r.bedrooms != null && r.bedrooms === num)
   }, [sortedRentals, bedroomFilter])
 
+  const reviewsByRentalId = useMemo(() => {
+    const map = new Map<number, Review[]>()
+    for (const r of reviews) {
+      const list = map.get(r.rental_id) ?? []
+      list.push(r)
+      map.set(r.rental_id, list)
+    }
+    return map
+  }, [reviews])
+
   return (
     <div className="min-h-screen">
       <header className="border-b border-sand-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
@@ -268,6 +278,7 @@ export default function Home() {
               <li key={rental.id}>
                 <RentalCard
                   rental={rental}
+                  reviews={reviewsByRentalId.get(rental.id) ?? []}
                   userRating={userReviews.get(rental.id)?.rating ?? 0}
                   userComment={userReviews.get(rental.id)?.comment ?? ''}
                   canReview={!!user}
@@ -286,6 +297,7 @@ export default function Home() {
               <li key={rental.id}>
                 <RentalListItem
                   rental={rental}
+                  reviews={reviewsByRentalId.get(rental.id) ?? []}
                   userRating={userReviews.get(rental.id)?.rating ?? 0}
                   userComment={userReviews.get(rental.id)?.comment ?? ''}
                   canReview={!!user}
