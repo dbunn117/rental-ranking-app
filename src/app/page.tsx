@@ -46,6 +46,7 @@ export default function Home() {
   const [sort, setSort] = useState<SortOption>('default')
   const [bedroomFilter, setBedroomFilter] = useState<string>('')
   const [viewMode, setViewMode] = useState<ViewMode>('card')
+  const [nights, setNights] = useState<number>(7)
   const [savingId, setSavingId] = useState<number | null>(null)
   const commentDebounceRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
   const userReviewsRef = useRef<Map<number, { rating: number; comment: string }>>(new Map())
@@ -278,6 +279,7 @@ export default function Home() {
               <li key={rental.id}>
                 <RentalCard
                   rental={rental}
+                  nights={nights}
                   reviews={reviewsByRentalId.get(rental.id) ?? []}
                   userRating={userReviews.get(rental.id)?.rating ?? 0}
                   userComment={userReviews.get(rental.id)?.comment ?? ''}

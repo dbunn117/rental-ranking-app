@@ -5,6 +5,7 @@ import { StarRating } from './StarRating'
 
 interface RentalCardProps {
   rental: RentalWithStats
+  nights: number
   reviews: Review[]
   userRating: number
   userComment: string
@@ -45,6 +46,7 @@ function formatReviewDate(created_at: string): string {
 
 export function RentalCard({
   rental,
+  nights,
   reviews,
   userRating,
   userComment,
@@ -53,7 +55,11 @@ export function RentalCard({
   onCommentChange,
   isSaving,
 }: RentalCardProps) {
-  const price = formatPrice(rental.rent_from_ZAR_per_day)
+  const nightlyAmount = parsePrice(rental.rent_from_ZAR_per_day)
+  const totalAmount = nightlyAmount * nights
+  const hasPrice = nightlyAmount > 0
+  const nightlyFormatted = hasPrice ? formatPriceZAR(nightlyAmount) : '—'
+  const totalFormatted = hasPrice ? formatPriceZAR(totalAmount) : '—'
   const description = rental.description?.trim().split('\n')[0] ?? ''
   const wifi = boolLabel(rental.wifi_included)
   const pool = boolLabel(rental.pool_mentioned)
@@ -76,9 +82,11 @@ export function RentalCard({
               {rental.max_persons ? ` · up to ${rental.max_persons} guests` : ''}
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="font-display font-semibold text-sea-600 text-lg">{price}</span>
-            <span className="text-sm text-sand-300">/ day</span>
+          <div className="shrink-0 flex flex-col items-end gap-0.5">
+            <p className="text-lg font-bold text-sea-900">{totalFormatted}</p>
+            <p className="text-sm text-sea-600">
+              {nightlyFormatted} / night{nights !== 1 ? ` · ${nights} nights` : ''}
+            </p>
           </div>
         </div>
 
