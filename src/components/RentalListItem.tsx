@@ -5,6 +5,7 @@ import { StarRating } from './StarRating'
 
 interface RentalListItemProps {
   rental: RentalWithStats
+  nights: number
   reviews: Review[]
   userRating: number
   userComment: string
@@ -14,11 +15,14 @@ interface RentalListItemProps {
   isSaving?: boolean
 }
 
-function formatPrice(raw: string | null): string {
-  if (raw == null) return '—'
+function parsePrice(raw: string | null): number {
+  if (raw == null) return 0
   const n = parseInt(String(raw).replace(/\D/g, ''), 10)
-  if (Number.isNaN(n)) return raw
-  return `R ${n.toLocaleString()}`
+  return Number.isNaN(n) ? 0 : n
+}
+
+function formatPriceZAR(amount: number): string {
+  return `R ${amount.toLocaleString()}`
 }
 
 function boolLabel(value: string | null): boolean {
@@ -36,6 +40,7 @@ function formatReviewDate(created_at: string): string {
 
 export function RentalListItem({
   rental,
+  nights,
   reviews,
   userRating,
   userComment,
@@ -44,7 +49,11 @@ export function RentalListItem({
   onCommentChange,
   isSaving,
 }: RentalListItemProps) {
-  const price = formatPrice(rental.rent_from_ZAR_per_day)
+  const nightlyAmount = parsePrice(rental.rent_from_ZAR_per_day)
+  const totalAmount = nightlyAmount * nights
+  const hasPrice = nightlyAmount > 0
+  const totalFormatted = hasPrice ? formatPriceZAR(totalAmount) : '—'
+  const nightlyFormatted = hasPrice ? formatPriceZAR(nightlyAmount) : '—'
   const description = rental.description?.trim().split('\n')[0] ?? ''
   const wifi = boolLabel(rental.wifi_included)
   const pool = boolLabel(rental.pool_mentioned)
@@ -62,10 +71,12 @@ export function RentalListItem({
             {rental.unit_or_number ? `${rental.unit_or_number} ` : ''}
             {rental.property_name ?? 'Property'}
           </h2>
-          <span className="font-display font-semibold text-sea-600 shrink-0">
-            {price}
-            <span className="text-sand-400 font-normal">/day</span>
-          </span>
+          <div className="shrink-0 flex flex-col items-end gap-0.5">
+            <span className="font-display font-bold text-sea-900">{totalFormatted}</span>
+            <span className="text-sm text-sea-600">
+              {nightlyFormatted} / night{nights !== 1 ? ` · ${nights} nights` : ''}
+            </span>
+          </div>
         </div>
         <p className="text-sm text-sea-600 mt-0.5">
           {rental.bedrooms} bed{rental.bedroom_category ? ` · ${rental.bedroom_category}` : ''}

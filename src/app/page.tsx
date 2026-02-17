@@ -315,6 +315,7 @@ export default function Home() {
               <li key={rental.id}>
                 <RentalListItem
                   rental={rental}
+                  nights={nights}
                   reviews={reviewsByRentalId.get(rental.id) ?? []}
                   userRating={userReviews.get(rental.id)?.rating ?? 0}
                   userComment={userReviews.get(rental.id)?.comment ?? ''}
