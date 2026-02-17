@@ -200,16 +200,17 @@ export default function Home() {
   }, [rentalsWithStats, sort, userReviews])
 
   const bedroomOptions = useMemo(() => {
-    const set = new Set<string>()
+    const set = new Set<number>()
     rentalsWithStats.forEach((r) => {
-      if (r.bedrooms != null && r.bedrooms.trim() !== '') set.add(String(r.bedrooms).trim())
+      if (r.bedrooms != null) set.add(r.bedrooms)
     })
-    return Array.from(set).sort((a, b) => Number(a) - Number(b))
+    return Array.from(set).sort((a, b) => a - b).map(String)
   }, [rentalsWithStats])
 
   const filteredRentals = useMemo(() => {
     if (!bedroomFilter) return sortedRentals
-    return sortedRentals.filter((r) => String(r.bedrooms ?? '').trim() === bedroomFilter)
+    const num = Number(bedroomFilter)
+    return sortedRentals.filter((r) => r.bedrooms != null && r.bedrooms === num)
   }, [sortedRentals, bedroomFilter])
 
   return (

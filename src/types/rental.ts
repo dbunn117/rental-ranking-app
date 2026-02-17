@@ -1,6 +1,6 @@
 export interface Rental {
   id: number
-  bedrooms: string | null
+  bedrooms: number | null
   bedroom_category: string | null
   unit_or_number: string | null
   property_name: string | null
