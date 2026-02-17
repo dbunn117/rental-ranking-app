@@ -15,11 +15,14 @@ interface RentalCardProps {
   isSaving?: boolean
 }
 
-function formatPrice(raw: string | null): string {
-  if (raw == null) return '—'
+function parsePrice(raw: string | null): number {
+  if (raw == null) return 0
   const n = parseInt(String(raw).replace(/\D/g, ''), 10)
-  if (Number.isNaN(n)) return raw
-  return `R ${n.toLocaleString()}`
+  return Number.isNaN(n) ? 0 : n
+}
+
+function formatPriceZAR(amount: number): string {
+  return `R ${amount.toLocaleString()}`
 }
 
 function boolLabel(value: string | null): boolean {
