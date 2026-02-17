@@ -257,6 +257,22 @@ export default function Home() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+        {!loading && filteredRentals.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-sand-200 bg-white px-4 py-3 shadow-sm">
+            <label className="flex items-center gap-2">
+              <span className="text-sm font-medium text-sea-700">Number of nights</span>
+              <input
+                type="number"
+                min={1}
+                max={365}
+                value={nights}
+                onChange={(e) => setNights(Math.max(1, Math.min(365, Number(e.target.value) || 1)))}
+                className="w-20 rounded-lg border border-sand-200 px-3 py-2 text-sm text-sea-900 focus:border-sea-500 focus:outline-none focus:ring-1 focus:ring-sea-500"
+              />
+            </label>
+          </div>
+        )}
+
         {loading && (
           <div className="flex items-center justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-sea-600 border-t-transparent" />
